@@ -2,23 +2,21 @@ extern crate termion;
 
 
 use std::io::{ Write, stdout, stdin };
-use termion::{ event::Key, input::TermRead, raw::IntoRawMode };
-
+use termion::{ event::Key, screen::*, input::TermRead, raw::IntoRawMode };
 
 
 fn main() {
 
     let stdin = stdin();
-
     let mut stdout = stdout().into_raw_mode().unwrap();
-    writeln!(stdout, "{}{}{}", termion::clear::All, termion::cursor::Goto(1, 1), termion::cursor::Hide).unwrap();
+    let mut screen = AlternateScreen::from(stdout);
+    writeln!(screen, "{}{}{}", termion::clear::All, termion::cursor::Goto(1, 1), termion::cursor::Hide).unwrap();
 
     for c in stdin.keys() {
 
-        write!(stdout, "{}{}", termion::cursor::Goto(1, 1), termion::clear::CurrentLine).unwrap();
+        write!(screen, "{}{}", termion::cursor::Goto(1, 1), termion::clear::CurrentLine).unwrap();
 
         match c.unwrap() {
-            // Exit.
             Key::Char('q') => break,
             Key::Char(c)   => println!("{}", c),
             Key::Alt(c)    => println!("Alt-{}", c),
@@ -30,8 +28,8 @@ fn main() {
             _              => println!("Other"),
         }
 
-        stdout.flush().unwrap();
+        screen.flush().unwrap();
     }
 
-    write!(stdout, "{}", termion::cursor::Show).unwrap();
+    write!(screen, "{}", termion::cursor::Show).unwrap();
 }
